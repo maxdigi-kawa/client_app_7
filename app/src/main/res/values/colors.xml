@@ -3,11 +3,13 @@
     <!-- Mapbox colors -->
 <!--    <color name="colorPrimary">#477df6</color>-->
 <!--    <color name="colorPrimaryDark">@color/mapboxGrayDark10</color>-->
-    <color name="colorPrimary">#0f9959</color>
+    <color name="colorPrimary">#009C52</color>
     <color name="colorPrimaryDark">#0f9959</color>
     <color name="mapboxWhite">#FFFFFF</color>
     <color name="mapboxBlack">#000</color>
     <color name="mapboxBlue">#477df6</color>
+    <color name="blue">#246EB9</color>
+    <color name="orange">#FD6035</color>
     <color name="mapboxGrayDark10">#476483</color>
     <color name="mapboxGray">#607d9c</color>
     <color name="mapboxGrayLight">#c6d2e1</color>

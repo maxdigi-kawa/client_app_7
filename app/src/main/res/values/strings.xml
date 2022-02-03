@@ -22,12 +22,12 @@
     <string name="save_edit">Save Edits</string>
     <string name="complete_marking">Complete Marking</string>
     <string name="save_details">Save Details</string>
-    <string name="genrate_farm_repory">Genrate Report</string>
+    <string name="genrate_farm_repory">Generate Report</string>
     <string name="submit_farms">Submit Farms</string>
     <string name="add_details">Add Details</string>
     <string name="save_n_gonext">Save &amp; Go Next</string>
     <string name="mark_another">Mark Another Farm</string>
-    <string name="correct_boundery">Edit boundary</string>
+    <string name="correct_boundery">Edit Boundary</string>
     <string name="farm_details">Farm Details</string>
     <string name="farm_saved_successfully">Farms saved successfully</string>
     <string name="farm_mark_successfully">Farm marked successfully</string>

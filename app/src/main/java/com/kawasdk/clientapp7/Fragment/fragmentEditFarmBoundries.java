@@ -569,7 +569,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                 genrateReportBtn,
                 completeMarkingBtn,
                 saveDetailBtn,
-                markAnotherBtn,
+//                markAnotherBtn,
                 addDetailBtn,
                 saveDetailnNextBtn
         };
