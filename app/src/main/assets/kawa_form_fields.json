@@ -1,0 +1,28 @@
+{
+  "farm_fields": [
+    {
+      "field_type" : "textview",
+      "field_placeholder": "Farmer Name",
+      "field_tag" : "farm_name",
+      "field_id": 0
+    },
+    {
+      "field_type" : "textview",
+      "field_placeholder": "Farmer Mobile Number",
+      "field_tag" : "farmer_mobile_number",
+      "field_id": 1
+    },
+    {
+      "field_type" : "textview",
+      "field_placeholder": "Crop Type",
+      "field_tag" : "crop_type",
+      "field_id": 2
+    },
+    {
+      "field_type" : "textview",
+      "field_placeholder": "Sowing Date",
+      "field_tag" : "sowing_date",
+      "field_id": 3
+    }
+  ]
+}
