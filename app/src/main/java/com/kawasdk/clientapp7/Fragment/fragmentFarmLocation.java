@@ -231,10 +231,12 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
                 new ActivityResultCallback<Boolean>() {
                     @Override
                     public void onActivityResult(Boolean result) {
-                        // Log.e("PERMISSIONSTATUS", String.valueOf(result));
+                        Log.e("PERMISSIONSTATUS", String.valueOf(result));
                         if (result) {
-                            // Log.e("TAG", "onActivityResult: PERMISSION GRANTED");
-
+                            if (!COMACT.checkFileManagerPermission()) {
+                                Log.e("check_Permission : ", String.valueOf(COMACT.checkFileManagerPermission()));
+                                COMACT.requestFileManagerPermission();
+                            }
                             Style loadedMapStyle = MAPBOXMAP.getStyle();
                             //MAPBOXMAP.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().zoom(Common.MAPZOOM).build()), 100);
                             LocationComponent locationComponent = MAPBOXMAP.getLocationComponent();
@@ -257,6 +259,11 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
                             //locationComponent.getLastKnownLocation().getLongitude()
                         } else {
                             // Log.e("TAG", "onActivityResult: PERMISSION DENIED");
+                            if (!COMACT.checkFileManagerPermission()) {
+                                Log.e("check_Permission : ", String.valueOf(COMACT.checkFileManagerPermission()));
+                                COMACT.requestFileManagerPermission();
+                            }
+                            Log.e("TAG", "onActivityResult: PERMISSION DENIED");
                             Toast.makeText(getActivity(), R.string.user_location_permission_explanation, Toast.LENGTH_LONG).show();
                         }
                     }
