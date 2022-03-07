@@ -13,6 +13,12 @@ public class MergeModel {
     @SerializedName("status")
     @Expose
     private String status;
+    @SerializedName("farms_fetched_at")
+    @Expose
+    private String farmsFetchedAt;
+    @SerializedName("recipe_id")
+    @Expose
+    private String recipeId;
 
     public List<ResponseKawa> getResponse() {
         return responseKawa;
@@ -29,5 +35,22 @@ public class MergeModel {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public String getFarmsFetchedAt() {
+        return farmsFetchedAt;
+    }
+
+    public void setFarmsFetchedAt(String farmsFetchedAt) {
+        this.farmsFetchedAt = farmsFetchedAt;
+    }
+
+    public String getRecipeId() {
+        return recipeId;
+    }
+
+    public void setRecipeId(String recipeId) {
+        this.recipeId = recipeId;
+    }
+
 
 }

@@ -37,13 +37,13 @@ public class KawaMap extends AppCompatActivity {
     public static String KAWA_API_KEY = "";
     public static String SEGMENT_API_KEY = "";
     public static String SMARTLOOK_API_KEY = "";
-    public static boolean isMergeEnable = true;
+    public static boolean isMergeEnable = false;
     public static boolean isEditEnable = true;
     public static boolean isFormEnable = true;
-    public static boolean isFarmDetailsEnable = true;
+    public static boolean isFarmDetailsEnable = false;
     public static boolean isOtherFarmDetailsEnable = false;
     public static boolean isSaveResultEnable = true;
-    public static boolean isBahasaEnable = false;
+    public static boolean isBahasaEnable = true;
     public static boolean isFlyToLocationEnable = false;
 
     public KawaMap(Context context) {
@@ -147,11 +147,11 @@ public class KawaMap extends AppCompatActivity {
             isValidKawaAPiKey = true;
         }
         if (SMARTLOOK_API_KEY == null || SMARTLOOK_API_KEY == "") {
-            initSmartlook("627da9d9178be1e4d7e3b5e54404d34f3bbf1877");
+            initSmartlook("5c5d2f08251c5d6a3a987459a9a8def18c4b8785");
 
         }
         if (SEGMENT_API_KEY == null || SEGMENT_API_KEY == "") {
-            initSegment(context,"8GDsJGGITP2nXZHTV4mFpA5yBNLsalUS");
+            initSegment(context,"lUTwaBO3DuVPH4431fTPcmrVsFK7DUjU");
         }
         return isValidKawaAPiKey;
         //interfaceKawaEvents.initKawaMap(isValid);

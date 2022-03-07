@@ -9,6 +9,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +19,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.kawasdk.R;
@@ -67,6 +71,7 @@ public class Common extends AppCompatActivity {
     public static ProgressDialog proDialog;
     public static Context context;
     public static ImageView imageline;
+    public static TextView textView;
     public static double MXCAMERALAT;
     public static double MXCAMERALNG;
     public static double CAMERALAT;
@@ -75,11 +80,13 @@ public class Common extends AppCompatActivity {
     public static double MINZOOM = 5.00;
     public static double MAPZOOM = 17.00;
     public static ProgressBar PROGRESSBAR;
-    public static String MAPBOX_ACCESS_TOKEN = "" ;
+    public static String MAPBOX_ACCESS_TOKEN = "";
     //public static final String MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoicnVwZXNoamFpbiIsImEiOiJja3JwdmdneGU1NHlxMnpwODN6bzFpbnkwIn0.UgSIBr9ChJFyrAKxtdNf9w"; // OLd MAPBOX TOKEN
     public static final String BASE_URL = "https://data.kawa.space/"; // live url
     public static final String ADRESS_URL = "https://nominatim.openstreetmap.org/"; // live url
+    public static final String REPORT_URL = "https://reportsgo.kawa.space/reports/"; // live url
     //public static final String BASE_URL = "https://data-staging.kawa.space/"; // test url
+    public static String FARM_ID = "";
     public static final String SDK_VERSION = android.os.Build.VERSION.SDK;
     private static final int PERMISSION_REQUEST_CODE = 100;
     public static String FARMS_FETCHED_AT = "";
@@ -250,7 +257,7 @@ public class Common extends AppCompatActivity {
         return contains;
     }
 
-    public static void showLoader(String loaderType) {
+    public static void showLoader(String loaderType, String visibleflag) {
         if (proDialog == null || !proDialog.isShowing()) {
             proDialog = new ProgressDialog(context);
             proDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -258,6 +265,7 @@ public class Common extends AppCompatActivity {
             View view = LayoutInflater.from(context).inflate(R.layout.loader, null);
             proDialog.setContentView(view);
             imageline = view.findViewById(R.id.imageline);
+            textView = view.findViewById(R.id.textView);
             PROGRESSBAR = view.findViewById(R.id.progress_circular);
             if (loaderType.equals("isScanner")) {
                 PROGRESSBAR.setVisibility(View.GONE);
@@ -266,6 +274,8 @@ public class Common extends AppCompatActivity {
                         R.anim.slide_down);
                 imageline.startAnimation(animVerticala);
             } else {
+                if (visibleflag.equals("show"))
+                    textView.setVisibility(View.VISIBLE);
                 imageline.setVisibility(View.GONE);
                 PROGRESSBAR.setVisibility(View.VISIBLE);
             }
@@ -304,7 +314,7 @@ public class Common extends AppCompatActivity {
         // Log.e("TAG", "setLocale: ");
         String languageToLoad = "en";
         if (KawaMap.isBahasaEnable) {
-            languageToLoad = "in";
+            languageToLoad = "hi";
         }
         // your language
         Locale locale = new Locale(languageToLoad);
@@ -324,9 +334,11 @@ public class Common extends AppCompatActivity {
             return false;
         }
     }
+
     public static void requestFileManagerPermission() {
         ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -370,12 +382,11 @@ public class Common extends AppCompatActivity {
     public static String getFiledsDetails() {
         String fildsStr;
         if (USER_NAME == null && USER_ADDRESS == null) {
-            fildsStr = "{\"user\":{\"kawa_api_key\":" + "\"" + KawaMap.KAWA_API_KEY + "\"" +"}";
-        } else if (USER_COMPANY != null) {
-            fildsStr = "{\"user\":{\"name\":" + "\"" + USER_NAME + "\"" + ",\"address\":" + "\"" + USER_ADDRESS + "\"" + ",\"kawa_api_key\":" + "\"" + KawaMap.KAWA_API_KEY + "\"" +"}";
-        }
-        else {
-            fildsStr = "{\"user\":{\"name\":" + "\"" + USER_NAME + "\"" + ",\"address\":" + "\"" + USER_ADDRESS + "\"" + ",\"company\":" + "\"" + USER_COMPANY + "\"" + ",\"kawa_api_key\":" + "\"" + KawaMap.KAWA_API_KEY +"\"" + "}";
+            fildsStr = "{\"user\":{\"kawa_api_key\":" + "\"" + KawaMap.KAWA_API_KEY + "\"" + "}";
+        } else if (USER_COMPANY == null) {
+            fildsStr = "{\"user\":{\"name\":" + "\"" + USER_NAME + "\"" + ",\"address\":" + "\"" + USER_ADDRESS + "\"" + ",\"kawa_api_key\":" + "\"" + KawaMap.KAWA_API_KEY + "\"" + "}";
+        } else {
+            fildsStr = "{\"user\":{\"name\":" + "\"" + USER_NAME + "\"" + ",\"address\":" + "\"" + USER_ADDRESS + "\"" + ",\"company\":" + "\"" + USER_COMPANY + "\"" + ",\"kawa_api_key\":" + "\"" + KawaMap.KAWA_API_KEY + "\"" + "}";
         }
 
         return fildsStr;
@@ -426,14 +437,38 @@ public class Common extends AppCompatActivity {
                             visibleRegion + ",\"resultantFarms\":" + responsemsg + "}}";
                     break;
                 case "START_OVER":
+                case "EXIT_SDK":
+                case "DISCARD":
                 case "MARK_ANOTHER_PLOTS":
                     jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + message + "\"" + "}}";
                     break;
                 case "GET_ALL_POLYGON_DATA":
-                    jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + message + "\"" + ",\"api_response\":" + responsemsg + "}}";
+                    jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + message + "\"" + ",\"resultantFarms\":" + responsemsg + "}}";
+                    break;
+                case "EDIT_FARM_BOUNDARY":
+                    jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + message + "\"" + ",\"farmGeoJSON\":" + responsemsg + "}}";
+                    break;
+                case "SINGLE_FARM_SELECTED":
+                    jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + message + "\"" + ",\"selectedFarm\":" + responsemsg + "}}";
+                    break;
+                case "TAP_APOINT_TOEDIT":
+                    jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + "User clicked on a point for editing" + "\"" + ",\"coordinates\":{\"lat\":"+"\""+  message +"\""+",\"long\":"+"\""+responsemsg+"\"" +"}}}";
+                    break;
+                case "DRAG_APOINT_TOEDIT":
+                case "JOYSTICK_APOINT_TOEDIT":
+                    jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + message + "\"" + ",\"prevCoordinates\":" + responsemsg + "}}";
+                    break;
+                case "SAVE_EDITED_FARM":
+                    jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + message + "\"" + ",\"editedFarm\":" + responsemsg + "}}";
+                    break;
+                    case "GENERATE_REPORT":
+                    jString = fildsInformation + ",\"metadata\":{\"report\":"  + responsemsg +  ",\"message\":" + "\"" + message +"\"" + "}}";
+                    break;
+                    case "GENERATE_REPORT_FAILURE":
+                    jString = fildsInformation + ",\"metadata\":{\"error\":" + "\"" + responsemsg + "\"" + ",\"message\":"  + "\"" +message + "\"" + "}}";
                     break;
             }
-            //// Log.e("TAG", "segmentInit: " + jString);
+            Log.e("TAG", "segmentInit: " + jString);
             try {
                 JsonObject jsonObject = JsonParser.parseString(jString).getAsJsonObject();
                 properties.putValue("data", jsonObject);
@@ -441,9 +476,24 @@ public class Common extends AppCompatActivity {
                 Analytics.with(context).track(eventname, properties);
             } catch (Exception e) {
                 Toast.makeText(context, String.valueOf(e.getMessage()), Toast.LENGTH_LONG).show();
+                Log.e("segment>>failed", String.valueOf(new Gson().toJson(e.getMessage())));
             }
         }
     }
+
+    public static boolean isConnected(Context context) {
+        NetworkInfo info = Connectivity.getNetworkInfo(context);
+        return (info != null && info.isConnected());
+    }
+    public static boolean isConnectedWifi(Context context) {
+        NetworkInfo info = Connectivity.getNetworkInfo(context);
+        return (info != null && info.isConnected() && info.getType() == ConnectivityManager.TYPE_WIFI);
+    }
+    public static boolean isConnectedFast(Context context) {
+        NetworkInfo info = Connectivity.getNetworkInfo(context);
+        return (info != null && info.isConnected() && Connectivity.isConnectionFast(info.getType(), info.getSubtype()));
+    }
+
 
 }
 

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -133,7 +134,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         COMACT = new Common(getActivity());
         Mapbox.getInstance(getActivity(),Common.MAPBOX_ACCESS_TOKEN);
-        COMACT.showLoader("isScanner");
+        COMACT.showLoader("isScanner","0");
     }
 
     @Override
@@ -293,7 +294,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
 
 
     public void getAllFarms() {
-        COMACT.showLoader("isScanner");
+        COMACT.showLoader("isScanner", "0");
         ServiceManager.getInstance().getKawaService().GET_FARMSs(KawaMap.KAWA_API_KEY, Common.SDK_VERSION, getCornerLatLng())
                 .enqueue(new Callback<DeviveBounderyModel>() {
                     @Override
@@ -305,6 +306,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
                                 COMACT.MAPZOOM = cameraPosition.zoom;
 
                                 COMACT.segmentEvents(getActivity(), "Get farm boundaries", "Response saved on successfully getting farm boundaries", MAPBOXMAP, response.body().getId(), "GET_FARMS");
+                                COMACT.FARM_ID = response.body().getId();
                                 Bundle farms_bundle = new Bundle();
                                 farms_bundle.putString("id", response.body().getId());
                                 farms_bundle.putDouble("lat", COMACT.CAMERALAT);
@@ -344,9 +346,18 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
                     @Override
                     public void onFailure(Call<DeviveBounderyModel> call, Throwable t) {
                         COMACT.hideLoader();
+                        String msg = null;
                         String errorBody = t.getMessage();
-                        // Log.e("TAG", "onFailure: " + errorBody);
-                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
+                        if (!COMACT.isConnected(getActivity())) {
+                            msg = getString(R.string.Text_Connection_Issue);
+
+                        } else if (!COMACT.isConnectedFast(getActivity())) {
+                            msg = getString(R.string.Text_Poor_Connection_Issue);
+                        } else {
+                            msg = getResources().getString(R.string.Error_General);
+                        }
+
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -669,7 +680,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
 
 
     public void getAllLocation() {
-        COMACT.showLoader("isCircle");
+        COMACT.showLoader("isCircle","0");
         ServiceManager.getInstance().getKawaService().getLocations()
                 .enqueue(new Callback<List<LocationModel>>() {
                     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -703,7 +714,17 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
                         COMACT.hideLoader();
                         String errorBody = t.getMessage();
                         // Log.e("getAllLocation", "onFailure: " + errorBody);
-                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
+                        String msg ;
+                        // Log.e("onResponse:Failure ", errorBody);
+                        if (!Common.isConnected(getActivity())) {
+                            msg = getString(R.string.Text_Connection_Issue);
+                        } else if (!Common.isConnectedFast(getActivity())) {
+                            msg = getString(R.string.Text_Poor_Connection_Issue);
+                        } else {
+                            msg = getResources().getString(R.string.Error_General);
+                        }
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
                     }
                 });
     }

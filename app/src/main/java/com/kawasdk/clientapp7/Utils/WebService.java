@@ -5,6 +5,9 @@ import com.kawasdk.clientapp7.Model.DeviveBounderyModel;
 import com.kawasdk.clientapp7.Model.LocationModel.LocationModel;
 import com.kawasdk.clientapp7.Model.MergeModel;
 import com.kawasdk.clientapp7.Model.PolygonModel;
+import com.kawasdk.clientapp7.Model.ReportModel;
+
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -12,6 +15,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -46,6 +50,13 @@ public interface WebService {
     @GET("reverse/")
     Call<JsonObject> getAddress(
             @Query("format") String json, @Query("lat") String lat, @Query("lon") String lon
+
+    );
+
+    @POST("instant")
+    Call<ReportModel> getReports(
+           @Header("x-api-key") String x_api_key,
+            @Body JsonObject geoJson
 
     );
 

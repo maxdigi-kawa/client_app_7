@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,8 +69,11 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
     TextView messageBox;
     InterfaceKawaEvents interfaceKawaEvents;
     Float AREA;
+    String FARMID;
     private ArrayList AREAARRAY = new ArrayList();
+    private ArrayList FARMIDARRAY = new ArrayList();
     ArrayList POLYGONAREA = new ArrayList<>();
+    ArrayList FARMIDLIST = new ArrayList<>();
 
     @Override
     public void onAttach(@NonNull @NotNull Context context) {
@@ -81,7 +85,7 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(getActivity(), Common.MAPBOX_ACCESS_TOKEN);
-        Common.showLoader("isScanner");
+        Common.showLoader("isScanner","0");
     }
 
     @Override
@@ -183,10 +187,25 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
                             }
 
                             if (flg == 0) {
-                                POLYSELECTED.add(i);
-                                lineLayer.setProperties(PropertyFactory.lineOpacity(1f));
-                                Common.segmentEvents(getActivity(), "Farm boundary Selection",
-                                        "select", MAPBOXMAP, getSelectedLatLng(), "FARMS_SELECTION");
+                                if(POLYSELECTED.size()>0)
+                                {
+                                    Log.e("TAG", "you cant: "+POLYSELECTED.size() );
+                                    AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                                    alertDialog.setTitle(getResources().getString(R.string.app_name));
+                                    alertDialog.setMessage(getResources().getString(R.string.can_not_select_more));
+                                    alertDialog.setIcon(R.mipmap.ic_launcher);
+                                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Ok", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                        }
+                                    });
+                                    alertDialog.show();
+                                }else {
+                                    POLYSELECTED.add(i);
+                                    lineLayer.setProperties(PropertyFactory.lineOpacity(1f));
+                                    Common.segmentEvents(getActivity(), "Farm boundary Selection",
+                                            "select", MAPBOXMAP, getSelectedLatLng(), "FARMS_SELECTION");
+                                }
 
                             } else {
                                 lineLayer.setProperties(PropertyFactory.lineOpacity(0f));
@@ -197,7 +216,7 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
                 }
             });
             int selSize = POLYSELECTED.size();
-            String msgPre = "s";
+            String msgPre = "";
             if (selSize == 1) {
                 msgPre = "";
             }
@@ -232,8 +251,10 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
                                 for (int i = 0; i < newListBoundry.size(); i++) {
                                     List<List<Double>> cordinates = newListBoundry.get(i).getGeojson().getCoordinates().get(0);
                                     AREA = newListBoundry.get(i).getProperties().getArea();
+                                    FARMID = newListBoundry.get(i).getId();
                                     // Log.e("Prop-AREA", String.valueOf(AREA));
                                     AREAARRAY.add(AREA);
+                                    FARMIDARRAY.add(FARMID);
                                     List<Point> llPts = new ArrayList<>();
                                     List<List<Point>> llPtsA = new ArrayList<>();
                                     List<LatLng> ll = new ArrayList<>();
@@ -286,9 +307,18 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
             @Override
             public void onFailure(@NonNull Call<PolygonModel> call, @NonNull Throwable t) {
                 Common.hideLoader();
+                String msg;
                 String errorBody = t.getMessage();
-                // Log.e("TAG", "errorBody: "+errorBody );
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
+                if (!Common.isConnected(getActivity())) {
+                    msg = getString(R.string.Text_Connection_Issue);
+                } else if (!Common.isConnectedFast(getActivity())) {
+                    msg = getString(R.string.Text_Poor_Connection_Issue);
+                } else {
+                    msg = getResources().getString(R.string.Error_General);
+                }
+
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+              //  Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -317,6 +347,7 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
         farms_bundle.putDouble("zoom", Common.MAPZOOM);
         farms_bundle.putSerializable("data", (Serializable) mergedCord);
         farms_bundle.putSerializable("polygonarea", (Serializable) POLYGONAREA);
+        farms_bundle.putSerializable("farmidlist", (Serializable) FARMIDLIST);
         fragmentEditFarmBoundries.setArguments(farms_bundle);
 
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -332,10 +363,12 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
             List<List<Point>> llPtsA = new ArrayList<>();
             List<Point> llPts = new ArrayList<>();
             POLYGONAREA = new ArrayList<>();
+            FARMIDLIST = new ArrayList<>();
             for (int j = 0; j < LNGLAT.get(POLYSELECTED.get(i)).size(); j++) {
                 List<LatLng> ll = LNGLAT.get(POLYSELECTED.get(i));
                 llPts.add(Point.fromLngLat(ll.get(j).getLongitude(), ll.get(j).getLatitude()));
                 POLYGONAREA.add(AREAARRAY.get(POLYSELECTED.get(i)));
+                FARMIDLIST.add(FARMIDARRAY.get(POLYSELECTED.get(i)));
                 // // Log.e("POLYSELECTED", ll.toString() );
             }
             llPtsA.add(llPts);
@@ -386,7 +419,7 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
         // Log.e("selectedFarms:", String.valueOf(selectedFarms));
         interfaceKawaEvents.onkawaSelect(selectedFarms);
         //Phase second
-        Common.showLoader("isCircle");
+        Common.showLoader("isCircle","0");
         ServiceManager.getInstance().getKawaService().getMergedPoints(KawaMap.KAWA_API_KEY, Common.SDK_VERSION, selectedFarms).enqueue(new Callback<MergeModel>() {
             @Override
             public void onResponse(@NonNull Call<MergeModel> call, @NonNull Response<MergeModel> response) {
@@ -437,9 +470,16 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
             @Override
             public void onFailure(@NonNull Call<MergeModel> call, @NonNull Throwable t) {
                 Common.hideLoader();
-                String errorBody = t.getMessage();
+                String msg ;
                 // Log.e("onResponse:Failure ", errorBody);
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
+                if (!Common.isConnected(getActivity())) {
+                    msg = getString(R.string.Text_Connection_Issue);
+                } else if (!Common.isConnectedFast(getActivity())) {
+                    msg = getString(R.string.Text_Poor_Connection_Issue);
+                } else {
+                    msg = getResources().getString(R.string.Error_General);
+                }
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                 //Toast.makeText(getActivity(), "onResponse:Failure " + errorBody, Toast.LENGTH_LONG).show(); // this will tell you why your api doesnt work most of time
             }
         });
@@ -453,6 +493,7 @@ public class fragmentShowAllFarms extends Fragment implements OnMapReadyCallback
             // Log.e("POLYSELECTED:", String.valueOf(POLYSELECTED.get(i)));
             lngLat.add(LNGLAT.get(POLYSELECTED.get(i)));
             POLYGONAREA.add(AREAARRAY.get(POLYSELECTED.get(i)));
+            POLYGONAREA.add(FARMIDARRAY.get(POLYSELECTED.get(i)));
         }
        // Log.e("lngLat-b", String.valueOf(lngLat) + " polygonarea :" + POLYGONAREA);
         gotoEditPolygon(lngLat); // Will be removed once service call is used

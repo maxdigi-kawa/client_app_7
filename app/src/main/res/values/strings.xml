@@ -1,14 +1,11 @@
 <resources >
     <string name="app_name"> \t FarMart Retailer App</string>
-    <string name="welcome">Welcome</string>
-    <string name="start_kawa_map">Start Kawa Map</string>
     <string name="smartlook_api_key" translatable="false">5c5d2f08251c5d6a3a987459a9a8def18c4b8785</string>
     <string name="segment_api_key" translatable="false">lUTwaBO3DuVPH4431fTPcmrVsFK7DUjU</string>
     <string name="mapbox_api_key" translatable="false">sk.eyJ1Ijoia2F3YS1hZG1pbiIsImEiOiJja3k4bnJ0eTIxZmg0Mm5veWF3cTRsdGxjIn0.5qk_juRmzDGSw1nwNohgLQ</string>
-    <string name="kawa_api_key">kawa_JHGA6tGe1_4r4h-HKQSPGw</string>
+    <string name="kawa_api_key" translatable="false">kawa_JHGA6tGe1_4r4h-HKQSPGw</string>
     <string name="user_location_permission_explanation">Allow Permission to access Location</string>
-    <string name="user_location_permission_not_granted">No Permssion</string>
-    <string name="Error_General">Something went wrong.</string>
+    <string name="Error_General">Something went wrong.Please try again later</string>
     <string name="search_place_toget_started">Search for a Place to Get Started</string>
     <string name="GET_FARMSStr">Get Farm Boundaries for this Region</string>
     <string name="searchStr">Search places and coordinates</string>
@@ -21,7 +18,6 @@
     <string name="add_more_plots">Add More Plots</string>
     <string name="save_edit">Save Edits</string>
     <string name="complete_marking">Complete Marking</string>
-    <string name="save_details">Save Details</string>
     <string name="genrate_farm_repory">Generate Report</string>
     <string name="submit_farms">Submit Farms</string>
     <string name="add_details">Add Details</string>
@@ -39,6 +35,12 @@
     <string name="drag_point_joystic">Drag the point or use the joystick</string>
     <string name="seeds_require">Seeds Required for   your farm</string>
     <string name="farm">Farm</string>
+    <string name="farmname">Farm </string>
+    <string name="farmdetails">Details</string>
+    <string name="add_details_farm">Add details for farm</string>
+    <string name="add_details_farm_details"> </string>
+    <string name="farm_saved_successfullt">File saved successfully.</string>
+
     <string name="selected">selected</string>
     <string name="error_large_area">The area chosen is too large. Please zoom in a little and try again</string>
     <string name="error_farmnot_available">Farm boundaries are not yet available for this region.</string>
@@ -46,13 +48,31 @@
     <string name="no_farm_detected">No farms were detected for your location. Please try again.</string>
     <string name="hectares">Hectares</string>
     <string name="enter_details">Enter Details</string>
-    <string name="name">Name</string>
-    <string name="address">Address</string>
-    <string name="company">Company</string>
-    <string name="error_company">Please enter comapny name</string>
-    <string name="fly_to_location">Fly To Location</string>
     <string name="mapped_locations">Mapped locations</string>
     <string name="retailer_name">Retailer Name</string>
     <string name="retailer_mobileno">Retailer Mobile Number</string>
+    <string name="retailer_mobileno_required">Retailer Mobile Number is a required field</string>
     <string name="capture_farm_boundary">Capture Farm Boundary</string>
+    <string name="please_enter_valid_mobileno">Please enter Valid Retailer mobile number</string>
+    <string name="all_fields_required">All form fields are required </string>
+    <string name="can_not_select_more">Cannot select more than one farm, you can edit the selected farm boundary on the next screen</string>
+    <string name="please_wait">Please wait while we generate your farm crop health report - it may take 1-2 minutes.</string>
+    <string name="form_field_1">Farmer Name</string>
+    <string name="form_field_2">Farmer Mobile Number</string>
+    <string name="form_field_3">Crop Type</string>
+    <string name="form_field_4">Sowing Date</string>
+    <string name="farmer_name_must_string">Farmer Name must be a String </string>
+    <string name="farmer_name_required">Farmer Name is a required field </string>
+    <string name="farmer_mobile_required">Farmer Mobile No is a required field" </string>
+    <string name="farmer_mobile_valid">Farmer Mobile No must be a valid numeric value </string>
+
+    <string name="farms_is_required">Farms is a required field</string>
+    <string name="sowing_date_is_not_valid">Sowing date is not a valid date</string>
+    <string name="sowing_date_is_today">Sowing date is same as today or a future date, not valid</string>
+    <string name="failed_to_find_insights">failed to find insights for farm, please try again after some days</string>
+    <string name="failed_to_find_insights_for_farm">Failed to get insights for farm</string>
+    <string name="failed_farm_boundaries_id">Failed to find farm_boundaries for given ids</string>
+    <string name="Text_Connection_Issue">There was a connection issue. Make sure you have an active Internet connection.</string>
+    <string name="Text_Poor_Connection_Issue">We were unable to connect to our server - please try again ensuring you have a good internet connection.</string>
+
 </resources>
