@@ -152,6 +152,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
     Integer FINALFOUNDIDX;
     boolean ISSUBMITAPI = false;
     String REPORTFILENAME = "";
+    Integer LASTINDEXOFSELECTEDPOLYGON;
 
 
     @Override
@@ -333,7 +334,8 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
         style.addImage("symbol_blue", BitmapFactory.decodeResource(this.getResources(), R.drawable.symbol_blue));
         style.addImage("symbol_yellow", BitmapFactory.decodeResource(this.getResources(), R.drawable.symbol_yellow));
         if (LNGLATEDIT.get(idx).size() > 0) {
-            for (int j = 0; j < LNGLATEDIT.get(idx).size(); j++) {
+            LASTINDEXOFSELECTEDPOLYGON = LNGLATEDIT.get(idx).size() - 1;
+            for (int j = 0; j < LNGLATEDIT.get(idx).size()-1; j++) {
                 JsonObject objD = new JsonObject();
                 //objD.addProperty("lIndex", idx);
                 objD.addProperty("sIndex", j);
@@ -369,8 +371,6 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                         flg = 1;
                     }
 
-                    // Log.e("SYBOL FLAG", String.valueOf(flg));
-
                     if (flg == 1) {
                         SYMBOLACTIVE = symbol;
                         symbol.setDraggable(true);
@@ -401,7 +401,11 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
             public void onAnnotationDrag(Symbol symbol) {
                 JsonObject objD = (JsonObject) symbol.getData();
                 int sIndex = objD.get("sIndex").getAsInt();
-                LNGLATEDIT.get(LAYERINDEX).set(sIndex, symbol.getLatLng());
+                if (sIndex == 0 || sIndex == LASTINDEXOFSELECTEDPOLYGON) {
+                    LNGLATEDIT.get(LAYERINDEX).set(0, symbol.getLatLng());
+                    LNGLATEDIT.get(LAYERINDEX).set(LASTINDEXOFSELECTEDPOLYGON, symbol.getLatLng());
+                } else
+                    LNGLATEDIT.get(LAYERINDEX).set(sIndex, symbol.getLatLng());
                 redrawFarms();
             }
 
@@ -505,7 +509,11 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
     private void setSymbolLL(Symbol symbol, LatLng latLng) {
         JsonObject objD = (JsonObject) symbol.getData();
         Integer sIndex = objD.get("sIndex").getAsInt();
-        LNGLATEDIT.get(LAYERINDEX).set(sIndex, latLng);
+        if (sIndex == 0 || sIndex == LASTINDEXOFSELECTEDPOLYGON) {
+            LNGLATEDIT.get(LAYERINDEX).set(0, symbol.getLatLng());
+            LNGLATEDIT.get(LAYERINDEX).set(LASTINDEXOFSELECTEDPOLYGON, symbol.getLatLng());
+        } else
+            LNGLATEDIT.get(LAYERINDEX).set(sIndex, symbol.getLatLng());
         symbol.setLatLng(latLng);
         SYMBOLSET.get(LAYERINDEX).update(symbol);
     }
@@ -958,7 +966,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                     public void onFailure(@NonNull Call<MergeModel> call, @NonNull Throwable t) {
                         Common.hideLoader();
                         //  String errorBody = t.getMessage();
-                        String msg ;
+                        String msg;
                         // Log.e("onResponse:Failure ", errorBody);
                         if (!Common.isConnected(getActivity())) {
                             msg = getString(R.string.Text_Connection_Issue);
@@ -1052,7 +1060,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                             if (!response.body().getReportUrl().equals("")) {
                                 String urlstr = response.body().getReportUrl();
                                 Common.segmentEvents(getActivity(), "Generate report",
-                                        "Report is generated successfully", MAPBOXMAP,new Gson().toJson(response.body()), "GENERATE_REPORT");
+                                        "Report is generated successfully", MAPBOXMAP, new Gson().toJson(response.body()), "GENERATE_REPORT");
                                 REPORTFILENAME = urlstr.substring(urlstr.lastIndexOf('/') + 1);
                                 new DownloadFileFromURL().execute(response.body().getReportUrl());
                                 new Handler(Looper.getMainLooper()).postDelayed(
@@ -1082,7 +1090,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                             Log.e("onResponse:Error %s", displayMsg);
                             Toast.makeText(getApplicationContext(), displayMsg, Toast.LENGTH_LONG).show();
                             Common.segmentEvents(getActivity(), "Generate report",
-                                    "Report has not been generated", MAPBOXMAP,displayMsg, "GENERATE_REPORT_FAILURE");
+                                    "Report has not been generated", MAPBOXMAP, displayMsg, "GENERATE_REPORT_FAILURE");
                             addFormDetail();
 
                         }
@@ -1091,7 +1099,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                     Common.hideLoader();
                     e.printStackTrace();
                     Common.segmentEvents(getActivity(), "Generate report",
-                            "Report has not been generated", MAPBOXMAP,e.toString(), "GENERATE_REPORT_FAILURE");
+                            "Report has not been generated", MAPBOXMAP, e.toString(), "GENERATE_REPORT_FAILURE");
 
                     addFormDetail();
                 }
@@ -1102,7 +1110,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                 Common.hideLoader();
                 String errorBody = t.getMessage();
                 Log.e(TAG, "onFailure: " + errorBody);
-                String msg ;
+                String msg;
                 // Log.e("onResponse:Failure ", errorBody);
                 if (!Common.isConnected(getActivity())) {
                     msg = getString(R.string.Text_Connection_Issue);
@@ -1113,7 +1121,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                 }
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                 Common.segmentEvents(getActivity(), "Generate report",
-                        "Report has not been generated", MAPBOXMAP,msg, "GENERATE_REPORT_FAILURE");
+                        "Report has not been generated", MAPBOXMAP, msg, "GENERATE_REPORT_FAILURE");
 
 //                Toast.makeText(getApplicationContext(), errorBody, Toast.LENGTH_LONG).show();
                 addFormDetail();
@@ -1177,8 +1185,8 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                 SETERRORMSG = getResources().getString(R.string.all_fields_required);
                 FORMVALIDATE = false;
             } else if (myTextViews[i].getTag().equals("farmer_name")) {
-               // if(!myTextViews[i].getText().toString().trim().matches("^[a-zA-Z ]+$") && !myTextViews[i].getText().toString().trim().matches("[\u0900-\u097F]+$")){
-                if(!myTextViews[i].getText().toString().trim().matches("^[a-zA-Z ]+$") && !myTextViews[i].getText().toString().trim().matches("[\u0900-\u097F ]+$")&& !myTextViews[i].getText().toString().trim().matches("[{Devanagari} ]+$")){
+                // if(!myTextViews[i].getText().toString().trim().matches("^[a-zA-Z ]+$") && !myTextViews[i].getText().toString().trim().matches("[\u0900-\u097F]+$")){
+                if (!myTextViews[i].getText().toString().trim().matches("^[a-zA-Z ]+$") && !myTextViews[i].getText().toString().trim().matches("[\u0900-\u097F ]+$") && !myTextViews[i].getText().toString().trim().matches("[{Devanagari} ]+$")) {
                     SETERRORMSG += "\n" + getResources().getString(R.string.farmer_name_must_string);
                     FORMVALIDATE = false;
                 }
@@ -1551,7 +1559,7 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
                         Common.hideLoader();
                         farmDetailsLayout.setVisibility(VIEW.VISIBLE);
                         //String errorBody = t.getMessage();
-                        String msg ;
+                        String msg;
                         // Log.e("onResponse:Failure ", errorBody);
                         if (!Common.isConnected(getActivity())) {
                             msg = getString(R.string.Text_Connection_Issue);
@@ -1732,7 +1740,6 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
 //            Uri webpage = Uri.parse(file_url);
 //            Intent webIntent = new Intent(Intent.ACTION_VIEW, webpage);
 //            startActivity(webIntent);
-
 
 
         }

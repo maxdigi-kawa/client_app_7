@@ -128,7 +128,6 @@ public class Common extends AppCompatActivity {
 
         style.addSource(new GeoJsonSource("polySourceID" + id, Polygon.fromLngLats(llPtsA)));
         style.addLayerBelow(new FillLayer("polyLayerID" + id, "polySourceID" + id).withProperties(fillColor(color), fillOpacity(opacityP)), "settlement-label");
-
         style.addSource(new GeoJsonSource("lineSourceID" + id, FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(LineString.fromLngLats(llPts))})));
         style.addLayer(new LineLayer("lineLayerID" + id, "lineSourceID" + id).withProperties(
                 PropertyFactory.lineWidth(4f),
