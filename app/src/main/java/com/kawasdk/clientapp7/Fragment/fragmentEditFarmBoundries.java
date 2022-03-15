@@ -1133,29 +1133,29 @@ public class fragmentEditFarmBoundries extends Fragment implements OnMapReadyCal
         String errorMsg, displayMsg = "";
         for (int i = 0; i < jsonArray.length(); i++) {
             errorMsg = jsonArray.getString(i);
-            if (errorMsg.equals("retailer_mobiler_number is a required field"))
+            if (errorMsg.equalsIgnoreCase("retailer_mobiler_number is a required field"))
                 displayMsg += getResources().getString(R.string.retailer_mobileno_required);
-            else if (errorMsg.equals("farmer_name is a required field"))
+            else if (errorMsg.equalsIgnoreCase("farmer_name is a required field"))
                 displayMsg += "\n " + getResources().getString(R.string.farmer_name_required);
-            else if (errorMsg.equals("farmer_mobile_number is a required field"))
+            else if (errorMsg.equalsIgnoreCase("farmer_mobile_number is a required field"))
                 displayMsg += "\n " + getResources().getString(R.string.farmer_mobile_required);
-            else if (errorMsg.equals("farms is a required field"))
+            else if (errorMsg.equalsIgnoreCase("farms is a required field"))
                 displayMsg += "\n " + getResources().getString(R.string.farms_is_required);
-            else if (errorMsg.equals("retailer_mobiler_number is a required field"))
+            else if (errorMsg.equalsIgnoreCase("retailer_mobiler_number is a required field"))
                 displayMsg += "\n " + getResources().getString(R.string.please_enter_valid_mobileno);
-            else if (errorMsg.equals("farmer_mobile_number must be a valid numeric value"))
+            else if (errorMsg.equalsIgnoreCase("farmer_mobile_number must be a valid numeric value"))
                 displayMsg += "\n " + getResources().getString(R.string.farmer_mobile_valid);
-            else if (errorMsg.equals("sowing_date is not a valid date"))
+            else if (errorMsg.equalsIgnoreCase("sowing_date is not a valid date"))
                 displayMsg += "\n " + getResources().getString(R.string.sowing_date_is_not_valid);
-            else if (errorMsg.equals("sowing_date is same as today or a future date, not valid"))
+            else if (errorMsg.equalsIgnoreCase("sowing_date is same as today or a future date, not valid"))
                 displayMsg += "\n " + getResources().getString(R.string.sowing_date_is_today);
-            else if (errorMsg.equals("failed to find insights for farm, please try again after some days"))
+            else if (errorMsg.equalsIgnoreCase("failed to find insights for farm, please try again after some days"))
                 displayMsg += "\n " + getResources().getString(R.string.failed_to_find_insights);
-            else if (errorMsg.equals("failed to get insights for farm"))
+            else if (errorMsg.equalsIgnoreCase("failed to get insights for farm"))
                 displayMsg += "\n " + getResources().getString(R.string.failed_to_find_insights_for_farm);
-            else if (errorMsg.equals("failed to find farm_boundaries for given ids"))
+            else if (errorMsg.equalsIgnoreCase("failed to find farm_boundaries for given ids"))
                 displayMsg += "\n " + getResources().getString(R.string.failed_farm_boundaries_id);
-            else if (errorMsg.equals("Internal Server Error"))
+            else if (errorMsg.equalsIgnoreCase("Internal Server Error"))
                 displayMsg += "\n " + "Internal Server Error";
             else
                 displayMsg += errorMsg;
