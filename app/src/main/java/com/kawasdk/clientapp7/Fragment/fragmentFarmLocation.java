@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -22,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,12 +38,14 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.kawasdk.R;
 import com.kawasdk.clientapp7.Model.DeviveBounderyModel;
 import com.kawasdk.clientapp7.Model.LocationModel.LocationModel;
 import com.kawasdk.clientapp7.Utils.Common;
+import com.kawasdk.clientapp7.Utils.GoogleServiceManager;
 import com.kawasdk.clientapp7.Utils.InterfaceKawaEvents;
 import com.kawasdk.clientapp7.Utils.KawaMap;
 import com.kawasdk.clientapp7.Utils.LocationAdapter;
@@ -109,10 +111,12 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
     LocationAdapter locationAdapter;
     PlaceSearchAdapter placeSearchAdapter;
     ArrayList<String> PLACEARRAY;
+    ArrayList<String> PLACEIDARRAY;
     ArrayList<LatLng> PLACELATLNGARRAY;
     ArrayList<String> LATLNGARRAY;
     LatLng PLACELATLNG;
     LatLng PLACELNGLAT;
+    LinearLayout powerdByIV;
     ArrayList<String> cityname = new ArrayList<String>();
     boolean searchEnable = true;
     private List<List<LatLng>> LNGLAT = new ArrayList<>();
@@ -133,8 +137,8 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         COMACT = new Common(getActivity());
-        Mapbox.getInstance(getActivity(),Common.MAPBOX_ACCESS_TOKEN);
-        COMACT.showLoader("isScanner","0");
+        Mapbox.getInstance(getActivity(), Common.MAPBOX_ACCESS_TOKEN);
+        COMACT.showLoader("isScanner", "0");
     }
 
     @Override
@@ -173,9 +177,11 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
         GET_FARMSBtn.setBackgroundColor(KawaMap.footerBtnBgColor);
 
         PLACEARRAY = new ArrayList<>();
+        PLACEIDARRAY = new ArrayList<>();
         LATLNGARRAY = new ArrayList<>();
         PLACELATLNGARRAY = new ArrayList<>();
         place_recyclerView = view.findViewById(R.id.place_recyclerView);
+        powerdByIV = view.findViewById(R.id.powerdByIV);
         locationlist_recyclerView = view.findViewById(R.id.locationlist_recyclerView);
 
         place_recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -292,7 +298,6 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
     }
 
 
-
     public void getAllFarms() {
         COMACT.showLoader("isScanner", "0");
         ServiceManager.getInstance().getKawaService().GET_FARMSs(KawaMap.KAWA_API_KEY, Common.SDK_VERSION, getCornerLatLng())
@@ -313,7 +318,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
                                 farms_bundle.putDouble("lng", COMACT.CAMERALNG);
                                 farms_bundle.putDouble("zoom", COMACT.MAPZOOM);
 
-                               fragmentShowAllFarms fragmentFarmLocation = new fragmentShowAllFarms();
+                                fragmentShowAllFarms fragmentFarmLocation = new fragmentShowAllFarms();
                                 fragmentFarmLocation.setArguments(farms_bundle);
                                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -378,6 +383,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
 
     private void flytoLocation() {
         place_recyclerView.setVisibility(View.GONE);
+        powerdByIV.setVisibility(View.GONE);
         dropdownBtn.setVisibility(View.GONE);
         locationlist_recyclerView.setVisibility(View.VISIBLE);
         ViewGroup.LayoutParams params = locationlist_recyclerView.getLayoutParams();
@@ -397,6 +403,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
         searchEnable = true;
         // Log.e("TAG", "searchView:<> ");
         place_recyclerView.setVisibility(View.VISIBLE);
+        powerdByIV.setVisibility(View.VISIBLE);
         locationlist_recyclerView.setVisibility(View.GONE);
         dropdownBtn.setVisibility(View.GONE);
     }
@@ -406,11 +413,12 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
         searchEnable = true;
         buttonSearchClear.setVisibility(View.GONE);
         place_recyclerView.setVisibility(View.GONE);
+        powerdByIV.setVisibility(View.GONE);
         locationlist_recyclerView.setVisibility(View.GONE);
         if (KawaMap.isFlyToLocationEnable)
-        dropdownBtn.setVisibility(View.VISIBLE);
+            dropdownBtn.setVisibility(View.VISIBLE);
         PLACEARRAY.clear(); // clear list
-        PLACELATLNGARRAY.clear(); // clear list
+        PLACEIDARRAY.clear(); // clear list
         placeSearchAdapter.setItems(PLACEARRAY);
     }
 
@@ -441,29 +449,29 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
     @Override
     public void onplacesearchItemClick(View view, int position) { // search seggestion selection
         //Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_LONG).show();
-        // Log.e("TAG", "PLACELATLNGARRAY: " + PLACELATLNGARRAY);
-        if (PLACELATLNGARRAY.size() > 0) {
+        Log.e("TAG", "PLACELATLNGARRAY: " + PLACEIDARRAY);
+        if(PLACEIDARRAY.size()>0)
+        getLatLngUsingGoogleAPI(PLACEIDARRAY.get(position));
+        else if(PLACELATLNGARRAY.size()>0)
             animateCameraToNewPosition(PLACELATLNGARRAY.get(position));
-            new android.os.Handler(Looper.getMainLooper()).postDelayed(
-                    new Runnable() {
-                        public void run() {
-                            COMACT.segmentEvents(getActivity(), "Fetching a desired location", PLACEARRAY.get(position), MAPBOXMAP, searchTxt.getText().toString(), "SEARCH");
-                        }
-                    },
-                    1000);
-            searchEnable = false;
-            searchTxt.setText(PLACEARRAY.get(position));
-        } else {
-            Toast.makeText(getContext(), "Invalid Latitude or Longitude", Toast.LENGTH_LONG).show();
-            //searchTxt.setText("");
-        }
+        new android.os.Handler(Looper.getMainLooper()).postDelayed(
+                new Runnable() {
+                    public void run() {
+                        COMACT.segmentEvents(getActivity(), "Fetching a desired location", PLACEARRAY.get(position), MAPBOXMAP, searchTxt.getText().toString(), "SEARCH");
+                    }
+                },
+                1000);
+        searchEnable = false;
+        searchTxt.setText(PLACEARRAY.get(position));
         place_recyclerView.setVisibility(View.GONE);
+        powerdByIV.setVisibility(View.GONE);
         if (KawaMap.isFlyToLocationEnable)
             dropdownBtn.setVisibility(View.VISIBLE);
         new android.os.Handler(Looper.getMainLooper()).postDelayed(
                 new Runnable() {
                     public void run() {
                         PLACEARRAY.clear(); // clear list
+                        PLACEIDARRAY.clear(); // clear list
                         PLACELATLNGARRAY.clear(); // clear list
                         placeSearchAdapter.setItems(PLACEARRAY);
                         hideKeyboard(getActivity(), view);
@@ -508,6 +516,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
         if (KawaMap.isFlyToLocationEnable)
             dropdownBtn.setVisibility(View.VISIBLE);
         place_recyclerView.setVisibility(View.GONE);
+        powerdByIV.setVisibility(View.GONE);
         locationlist_recyclerView.setVisibility(View.GONE);
         return false;
     }
@@ -532,60 +541,71 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
         if (searchStr.length() >= 3) {
 
             place_recyclerView.setVisibility(View.VISIBLE);
+            powerdByIV.setVisibility(View.VISIBLE);
             dropdownBtn.setVisibility(View.GONE);
             Pattern pattern = Pattern.compile(".*[a-zA-Z]+.*");
             Matcher matcher = pattern.matcher(searchStr);
+            Pattern numPattern = Pattern.compile(".*[0-9]+.*");
+            Matcher noMatcher = numPattern.matcher(searchStr);
+            Log.e("TAG", "makeGeocodeSearch:>><< " + searchStr.matches("^[0-9]*$"));
             if (matcher.matches()) {
-                searchUsingAddress(searchStr);
+                // searchUsingAddress(searchStr);
+                Log.e("TAG", "makeGeocodeSearch:If ");
+                getLocationGoogleAPI(searchStr);
+            } else if (searchStr.matches("^[0-9]*$")) {
+                getLocationGoogleAPI(searchStr);
+                Log.e("TAG", "makeGeocodeSearch:else-If ");
             } else {
+                Log.e("TAG", "makeGeocodeSearch:else ");
                 searchUsingLatLng(searchStr);
             }
 
         } else {
             place_recyclerView.setVisibility(View.GONE);
+            powerdByIV.setVisibility(View.GONE);
             if (KawaMap.isFlyToLocationEnable)
                 dropdownBtn.setVisibility(View.VISIBLE);
         }
     }
 
-    public void searchUsingAddress(String searchStr) {
-        PLACEARRAY.clear(); // clear list
-        PLACELATLNGARRAY.clear(); // clear list
-        placeSearchAdapter.setItems(PLACEARRAY);
-        MapboxGeocoding mapboxGeocoding = MapboxGeocoding.builder()
-                .accessToken(Common.MAPBOX_ACCESS_TOKEN)
-                .query(searchStr)
-                .build();
+    /* public void searchUsingAddress(String searchStr) {
+         PLACEARRAY.clear(); // clear list
+         PLACELATLNGARRAY.clear(); // clear list
+         placeSearchAdapter.setItems(PLACEARRAY);
+         MapboxGeocoding mapboxGeocoding = MapboxGeocoding.builder()
+                 .accessToken(Common.MAPBOX_ACCESS_TOKEN)
+                 .query(searchStr)
+                 .build();
 
-        mapboxGeocoding.enqueueCall(new Callback<GeocodingResponse>() {
-            @Override
-            public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
-                List<CarmenFeature> results = response.body().features();
-                if (results.size() > 0) {
-                    PLACEARRAY.clear(); // clear list
-                    PLACELATLNGARRAY.clear(); // clear list
-                    for (int i = 0; i < results.size(); i++) {
-                        Log.d("TAG", "onResponse: " + results.get(0).placeName());
-                        PLACEARRAY.add(results.get(i).placeName());
-                        double lat = results.get(i).center().coordinates().get(1);
-                        double lng = results.get(i).center().coordinates().get(0);
-                        PLACELATLNG = (new LatLng(Double.valueOf(lat),
-                                Double.valueOf(lng)));
-                        PLACELATLNGARRAY.add(PLACELATLNG);
-                        placeSearchAdapter.setItems(PLACEARRAY);
-                    }
-                } else {
-                    Log.d("TAG", "onResponse: No result found");
-                }
-            }
+         mapboxGeocoding.enqueueCall(new Callback<GeocodingResponse>() {
+             @Override
+             public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+                 List<CarmenFeature> results = response.body().features();
+                 if (results.size() > 0) {
+                     PLACEARRAY.clear(); // clear list
+                     PLACELATLNGARRAY.clear(); // clear list
+                     for (int i = 0; i < results.size(); i++) {
+                         Log.d("TAG", "onResponse: " + results.get(0).placeName());
+                         PLACEARRAY.add(results.get(i).placeName());
+                         double lat = results.get(i).center().coordinates().get(1);
+                         double lng = results.get(i).center().coordinates().get(0);
+                         PLACELATLNG = (new LatLng(Double.valueOf(lat),
+                                 Double.valueOf(lng)));
+                         PLACELATLNGARRAY.add(PLACELATLNG);
+                         placeSearchAdapter.setItems(PLACEARRAY);
+                     }
+                 } else {
+                     Log.d("TAG", "onResponse: No result found");
+                 }
+             }
 
-            @Override
-            public void onFailure(Call<GeocodingResponse> call, Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
-    }
-
+             @Override
+             public void onFailure(Call<GeocodingResponse> call, Throwable throwable) {
+                 throwable.printStackTrace();
+             }
+         });
+     }
+ */
     public void searchUsingLatLng(String searchStr) {
 //        // Log.e("TAG", "searchUsingLatLng: "+searchStr );
         List<String> placeList = Arrays.asList(searchStr.split("\\,"));
@@ -678,9 +698,105 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
         }
     }
 
+    public void getLocationGoogleAPI(String searchStr) {
+        // COMACT.showLoader("isCircle","0");
+        String latlng = COMACT.CAMERALAT + "," + COMACT.CAMERALNG;
+        GoogleServiceManager.getInstance().getKawaService().getGoogleLocations(searchStr, latlng,"50000", "AIzaSyD4USXe5X90MW3JnWrffNBl822ym99Q8hs").enqueue(new Callback<JsonObject>() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+
+            @Override
+            public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
+                //  COMACT.hideLoader();
+                try {
+                    JsonArray googlePlacesArray = response.body().getAsJsonArray("predictions");
+                    PLACEARRAY.clear(); // clear list
+                    PLACEIDARRAY.clear(); // clear list
+                    PLACEARRAY = new ArrayList<>();
+                    PLACEIDARRAY = new ArrayList<>();
+
+                    placeSearchAdapter.setItems(PLACEARRAY);
+                    for (int i = 0; googlePlacesArray.size() > i; i++) {
+                        PLACEARRAY.add(String.valueOf(googlePlacesArray.get(i).getAsJsonObject().get("description").getAsString()));
+                        PLACEIDARRAY.add(String.valueOf(googlePlacesArray.get(i).getAsJsonObject().get("place_id").getAsString()));
+                    }
+                    placeSearchAdapter.setItems(PLACEARRAY);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                //           COMACT.hideLoader();
+                String errorBody = t.getMessage();
+                // Log.e("getAllLocation", "onFailure: " + errorBody);
+                String msg;
+                // Log.e("onResponse:Failure ", errorBody);
+                if (!Common.isConnected(getActivity())) {
+                    msg = getString(R.string.Text_Connection_Issue);
+                } else if (!Common.isConnectedFast(getActivity())) {
+                    msg = getString(R.string.Text_Poor_Connection_Issue);
+                } else {
+                    msg = getResources().getString(R.string.Error_General);
+                }
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+
+    public void getLatLngUsingGoogleAPI(String searchStr) {
+        COMACT.showLoader("isCircle", "0");
+
+        GoogleServiceManager.getInstance().getKawaService().getLatLngLocations("geometry", searchStr, "AIzaSyD4USXe5X90MW3JnWrffNBl822ym99Q8hs").enqueue(new Callback<JsonObject>() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+
+            @Override
+            public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
+                COMACT.hideLoader();
+                LatLng newLatLng ;
+                try {
+                    JsonObject googlePlacesArray = response.body().getAsJsonObject("result");
+                    Log.e("TAG", "onResponse:>>>> " + googlePlacesArray);
+                    if (PLACEIDARRAY.size() > 0) {
+                        newLatLng = new LatLng(googlePlacesArray.get("geometry").getAsJsonObject().get("location").getAsJsonObject().get("lat").getAsDouble(),googlePlacesArray.get("geometry").getAsJsonObject().get("location").getAsJsonObject().get("lng").getAsDouble());
+                        animateCameraToNewPosition(newLatLng);
+                    } else {
+                        Toast.makeText(getContext(), "Invalid Latitude or Longitude", Toast.LENGTH_LONG).show();
+                        //searchTxt.setText("");
+                    }
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                COMACT.hideLoader();
+                String errorBody = t.getMessage();
+                // Log.e("getAllLocation", "onFailure: " + errorBody);
+                String msg;
+                // Log.e("onResponse:Failure ", errorBody);
+                if (!Common.isConnected(getActivity())) {
+                    msg = getString(R.string.Text_Connection_Issue);
+                } else if (!Common.isConnectedFast(getActivity())) {
+                    msg = getString(R.string.Text_Poor_Connection_Issue);
+                } else {
+                    msg = getResources().getString(R.string.Error_General);
+                }
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), getResources().getString(R.string.Error_General), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 
     public void getAllLocation() {
-        COMACT.showLoader("isCircle","0");
+        COMACT.showLoader("isCircle", "0");
         ServiceManager.getInstance().getKawaService().getLocations()
                 .enqueue(new Callback<List<LocationModel>>() {
                     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -714,7 +830,7 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
                         COMACT.hideLoader();
                         String errorBody = t.getMessage();
                         // Log.e("getAllLocation", "onFailure: " + errorBody);
-                        String msg ;
+                        String msg;
                         // Log.e("onResponse:Failure ", errorBody);
                         if (!Common.isConnected(getActivity())) {
                             msg = getString(R.string.Text_Connection_Issue);
@@ -759,23 +875,30 @@ public class fragmentFarmLocation extends Fragment implements OnMapReadyCallback
     public void onResume() {
         super.onResume();
         MAPVIEW.onResume();
-        if (firstTimecnt == 0) {
-            // do something
-            // Log.e("onStart_if", String.valueOf(firstTimecnt));
-            firstTimecnt = 2;
-        } else if (firstTimecnt == 2) {
-            // Log.e("onStart_else", String.valueOf(firstTimecnt));
-            //MPERMISSIONRESULT.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-            new android.os.Handler(Looper.getMainLooper()).postDelayed(
-                    new Runnable() {
-                        public void run() {
-                            Fragment frag = new fragmentFarmLocation();
-                            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                            fragmentManager.beginTransaction().replace(R.id.kawaMapView, frag).commit();
-                        }
-                    },
-                    1000);
+        try {
+            if (firstTimecnt == 0) {
+                // do something
+                // Log.e("onStart_if", String.valueOf(firstTimecnt));
+                firstTimecnt = 2;
+            } else if (firstTimecnt == 2) {
+                // Log.e("onStart_else", String.valueOf(firstTimecnt));
+                //MPERMISSIONRESULT.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+                new android.os.Handler(Looper.getMainLooper()).postDelayed(
+                        new Runnable() {
+                            public void run() {
+                                Fragment frag = new fragmentFarmLocation();
+                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                                fragmentManager.beginTransaction().replace(R.id.kawaMapView, frag).commit();
+                            }
+                        },
+                        1000);
+            }
         }
+        catch (Exception e)
+        {
+
+        }
+
     }
 
     public static void hideKeyboard(Activity activity, View view) {

@@ -77,12 +77,12 @@
                 android:imeOptions="actionDone"
                 android:inputType="text"
                 android:maxLines="1"
-                android:paddingRight="40dp"
-                android:paddingLeft="20dp"
-                android:textColor="@color/mapboxBlack"
-                android:textColorHint="@color/mapboxGrayLight"
                 android:paddingVertical="15dp"
-                android:singleLine="true"/>
+                android:paddingLeft="20dp"
+                android:paddingRight="40dp"
+                android:singleLine="true"
+                android:textColor="@color/mapboxBlack"
+                android:textColorHint="@color/mapboxGrayLight" />
 
             <ImageView
                 android:id="@+id/button_search_clear"
@@ -119,10 +119,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:background="@drawable/style_rounded_corner_large"
+            android:background="@drawable/style_recyclerview"
             android:nestedScrollingEnabled="false"
             android:overScrollMode="never"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/powerdByIV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/style_powerby"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:src="@drawable/powered_by_google_on_white" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/locationlist_recyclerView"

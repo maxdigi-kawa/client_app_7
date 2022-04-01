@@ -13,6 +13,8 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
@@ -29,6 +31,7 @@ public interface WebService {
     @GET("signal_bounds/farm_boundaries")
     Call <List<LocationModel>>  getLocations(
     );
+
     @GET("status/{id}")
     Call<PolygonModel> status(
             @Header("x-api-key") String x_api_key,@Header("android-version") String android_version,
@@ -52,13 +55,17 @@ public interface WebService {
             @Query("format") String json, @Query("lat") String lat, @Query("lon") String lon
 
     );
-
     @POST("instant")
     Call<ReportModel> getReports(
            @Header("x-api-key") String x_api_key,
             @Body JsonObject geoJson
 
     );
+    @GET("autocomplete/json")
+    Call<JsonObject>  getGoogleLocations(@Query("input") String input,@Query("location") String latlng,@Query("radius") String radius,@Query("key") String key);
+
+    @GET("details/json")
+    Call<JsonObject>  getLatLngLocations(@Query("fields") String geometry,@Query("place_id") String latlng,@Query("key") String key);
 
 }
 

@@ -208,21 +208,25 @@ public class Common extends AppCompatActivity {
             zoomleval = zoomleval + val;
         }
         if (KawaMap.SEGMENT_API_KEY != "" && KawaMap.SEGMENT_API_KEY != null) {
-            String jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + "Zoom leval saved" + "\"" + ",\"previousCoordinates\":{\"lat\":" + "\"" +
-                    previousLat + "\"" + ",\"long\":" + "\"" + previousLng + "\"" + "},\"currentCoordinates\":{\"lat\":" + "\"" +
-                    CAMERALAT + "\"" + ",\"long\":" + "\"" + CAMERALNG + "\"" + "}, \"previousViewport\": " +
-                    previousvisibleRegion + ", \"currentViewport\": " + visibleRegion + ",\"previousZoom\": " + previouszoomleval + ",\"currentZoom\": " + zoomleval + "}}";
-            // Log.e("TAG", "segmentInit: " + jString);
-            JsonObject jsonObject = JsonParser.parseString(jString).getAsJsonObject();
-            properties.putValue("data", jsonObject);
-
-            String zoomType = "";
-            if (val == 1.0) {
-                zoomType = "Zoom in";
-            } else {
-                zoomType = "Zoom out";
+            try {
+                String jString = fildsInformation + ",\"metadata\":{\"message\":" + "\"" + "Zoom leval saved" + "\"" + ",\"previousCoordinates\":{\"lat\":" + "\"" +
+                        previousLat + "\"" + ",\"long\":" + "\"" + previousLng + "\"" + "},\"currentCoordinates\":{\"lat\":" + "\"" +
+                        CAMERALAT + "\"" + ",\"long\":" + "\"" + CAMERALNG + "\"" + "}, \"previousViewport\": " +
+                        previousvisibleRegion + ", \"currentViewport\": " + visibleRegion + ",\"previousZoom\": " + previouszoomleval + ",\"currentZoom\": " + zoomleval + "}}";
+                Log.e("TAG", "segmentInit: " + jString);
+                JsonObject jsonObject = JsonParser.parseString(jString).getAsJsonObject();
+                properties.putValue("data", jsonObject);
+                String zoomType = "";
+                if (val == 1.0) {
+                    zoomType = "Zoom in";
+                } else {
+                    zoomType = "Zoom out";
+                }
+                Analytics.with(context).track(zoomType, properties);
             }
-            Analytics.with(context).track(zoomType, properties);
+            catch (Exception e){
+                Log.e("TAG", "setZoomLevel:e "+e );
+            }
         }
     }
 
